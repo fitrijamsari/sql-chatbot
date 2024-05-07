@@ -2,15 +2,12 @@
 
 ## Introduction
 
-This project will implement the combination ideas of Adaptive RAG, Corrective RAG and Self-RAG into a RAG agent to improve the RAG workflow:
+This project will.....
 
-- **Routing:** Adaptive RAG ([paper](https://arxiv.org/abs/2403.14403)). Route questions to different retrieval approaches.
-- **Fallback:** Corrective RAG ([paper](https://arxiv.org/pdf/2401.15884.pdf)). Fallback to web search if docs are not relevant to query.
-- **Self-correction:** Self-RAG ([paper](https://arxiv.org/abs/2310.11511)). Fix answers w/ hallucinations or don’t address question.
+The project will run on sample database (Chinook Database). This sample database is provided by the LangChain Documentation.
+This is a sample database that represents a digital media store, including tables for artists, albums, media tracks, invoices, and customers. We will use this database to test our chatbot.
 
-The concept is the following diagram:
-
-![The Concept](langgraph_adaptive_rag.png)
+![The Documentation](langgraph_adaptive_rag.png)
 
 ## Technology Used
 
@@ -26,13 +23,33 @@ To run this demo project, create an virtual environment and install the src pack
 
 1. Clone the repository:
 
-2. Download the llama3 model locally first. [Llama3 Model](https://ollama.com/)
+2. Setup the sample database
 
-3. Test run the llama3 on terminal. Open the terminal and run:
+The project will use a SQLite connection with Chinook database. Follow these [installation steps](https://database.guide/2-sample-databases-sqlite/) to create Chinook.db in the same directory as this notebook:
+
+- Save [this file](https://raw.githubusercontent.com/lerocha/chinook-database/master/ChinookDatabase/DataSources/Chinook_Sqlite.sql) as Chinook_Sqlite.sql
+
+- First, save the Chinook_Sqlite.sql script to a folder/directory on your computer. That’s a direct link to the script on GitHub.
+
+Now create a database called Chinook. You can do this by connecting to SQLite with the following command:
 
 ```bash
-ollama run llama3
+sqlite3 Chinook.db
 ```
+
+- Now you can run the script. To run it from the file, use the following command:
+
+```bash
+.read Chinook_Sqlite.sql
+```
+
+- Test the database
+
+```bash
+SELECT * FROM Artist LIMIT 10;
+```
+
+Now, Chinhook.db is in our directory and we can interface with it using the SQLAlchemy-driven SQLDatabase class.
 
 3. create .env files with the following secret keys:
 
@@ -40,15 +57,22 @@ ollama run llama3
 LANGCHAIN_TRACING_V2='true'
 LANGCHAIN_ENDPOINT='https://api.smith.langchain.com'
 LANGCHAIN_API_KEY=<your-api-key>
+
+OPENAI_API_KEY=<your-api-key>
+GROQ_API_KEY=<your-api-key>
 ```
 
-4. Install Dependencies
+3. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-5. Run the various jupyter notebook
+4. Run the application
+
+```bash
+streamlit run src/app.py
+```
 
 ## Challenges
 
@@ -59,3 +83,8 @@ pip install -r requirements.txt
 
 1. Convert the notebook into functional component and classes with standard python project structure with logging, config and others.
 2. Accept for various other input data format such as pdf and sql.
+
+## Reference & Documentation
+
+1. ![LangChain with SQL Documentation](https://python.langchain.com/docs/use_cases/sql/quickstart/)
+2. ![Streamlit Documentation](https://docs.streamlit.io/get-started/tutorials/create-an-app)
