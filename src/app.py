@@ -3,6 +3,7 @@ import os
 import streamlit as st
 from dotenv import load_dotenv
 from langchain_community.utilities import SQLDatabase
+from langchain_core.messages import AIMessage, HumanMessage
 
 load_dotenv()
 
@@ -17,6 +18,14 @@ def init_database(host: str, port: str, user: str, password: str, database: str)
     db = SQLDatabase.from_uri(db_uri)
     return db
 
+
+# initialize chat_history in streamlit session
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = [
+        AIMessage(
+            content="Hello, I'am your SQL Assistant. Ask me anything about your database?"
+        ),
+    ]
 
 st.set_page_config(page_title="Chatbot with MySQL", page_icon=":robot:")
 
@@ -46,4 +55,26 @@ with st.sidebar:
             st.session_state.db = db
             st.success("Connected to database!")
 
-st.chat_input(placeholder="Type your message here...", key="input", on_submit=None)
+# streamlit chat display
+for message in st.session_state.chat_history:
+    if isinstance(message, AIMessage):
+        with st.chat_message("AI"):
+            st.markdown(message.content)
+    elif isinstance(message, HumanMessage):
+        with st.chat_message("Human"):
+            st.markdown(message.content)
+
+user_query = st.chat_input(
+    placeholder="Type your message here...", key="input", on_submit=None
+)
+if user_query is not None and user_query.strip() != "":
+    st.session_state.chat_history.append(HumanMessage(content=user_query))
+
+    with st.chat_message("Human"):
+        st.markdown(user_query)
+
+    with st.chat_message("AI"):
+        response = "I dont know"
+        st.markdown(response)
+
+    st.session_state.chat_history.append(AIMessage(content=response))
