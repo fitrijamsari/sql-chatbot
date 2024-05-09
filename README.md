@@ -4,10 +4,12 @@
 
 This project will enable communication in natural language with the database.
 
+![The Screenshot](img/streamlit_screenshot.png)
+
 ![The Concept](img/chat-with-mysql-chain-langchain.jpg)
 
 > [!NOTE]
-> This project is not an agent. It is just a sample to direct communicate with the database. If the user asking anything unrelated, it will produce error. No fallback has been establish yet.
+> This project is not an agent. It is just a sample to direct communicate with the database using chain. If the user asking anything unrelated, it will produce error. No fallback has been establish yet.
 
 The project will run on sample database (Chinook Database). This sample database is provided by the LangChain Documentation.
 This is a sample database that represents a digital media store, including tables for artists, albums, media tracks, invoices, and customers. We will use this database to test our chatbot.
@@ -18,7 +20,6 @@ The following modules are used in this project:
 
 - OpenAI
 - LangChain
-- Chroma
 
 ## Getting started
 
@@ -89,5 +90,5 @@ streamlit run src/app.py
 
 ## Reference & Documentation
 
-1. ![LangChain with SQL Documentation](https://python.langchain.com/docs/use_cases/sql/quickstart/)
-2. ![Streamlit Documentation](https://docs.streamlit.io/get-started/tutorials/create-an-app)
+1. [LangChain with SQL Documentation](https://python.langchain.com/docs/use_cases/sql/quickstart/)
+2. [Streamlit Documentation](https://docs.streamlit.io/get-started/tutorials/create-an-app)

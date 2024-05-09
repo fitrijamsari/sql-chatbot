@@ -19,9 +19,12 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 
 def init_database(host: str, port: str, user: str, password: str, database: str):
-    db_uri = f"mysql+mysqlconnector://{user}:{password}@{host}:{port}/{database}"  # for mysql
-    # db_uri = f"sqlite:///{database}"  # for sqlite
-    db = SQLDatabase.from_uri(db_uri)
+    try:
+        db_uri = f"mysql+mysqlconnector://{user}:{password}@{host}:{port}/{database}"  # for mysql
+        # db_uri = f"sqlite:///{database}"  # for sqlite
+        db = SQLDatabase.from_uri(db_uri)
+    except Exception as e:
+        st.error(e)
     return db
 
 
@@ -51,9 +54,10 @@ def get_sql_chain(db: SQLDatabase):
     """
     prompt = ChatPromptTemplate.from_template(template)
 
-    llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
-    # llm = ChatOpenAI(model="gpt-4-turbo", temperature=0)
-    # llm = ChatGroq(model="mixtral-8x7b-32768", temperature=0)
+    if model == "gpt-3.5-turbo":
+        llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
+    else:
+        llm = ChatGroq(model_name=model, temperature=0, groq_api_key=GROQ_API_KEY)
 
     def get_schema(_):
         return db.get_table_info()
@@ -64,7 +68,7 @@ def get_sql_chain(db: SQLDatabase):
     return sql_chain
 
 
-def get_response(user_query: str, chat_history: list, db: SQLDatabase):
+def get_response(model: str, user_query: str, chat_history: list, db: SQLDatabase):
     sql_chain = get_sql_chain(db)
 
     template = """
@@ -83,9 +87,12 @@ def get_response(user_query: str, chat_history: list, db: SQLDatabase):
 
     prompt = ChatPromptTemplate.from_template(template)
 
-    llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
-    # llm = ChatOpenAI(model="gpt-4-turbo", temperature=0)
-    # llm = ChatGroq(model="mixtral-8x7b-32768", temperature=0)
+    if model == "gpt-3.5-turbo":
+        llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
+    elif model == "gpt-4-turbo":
+        llm = ChatOpenAI(model="gpt-4-turbo", temperature=0)
+    else:
+        llm = ChatGroq(model_name=model, temperature=0, groq_api_key=GROQ_API_KEY)
 
     chain = (
         RunnablePassthrough.assign(query=sql_chain).assign(
@@ -114,9 +121,20 @@ st.set_page_config(page_title="Chatbot with MySQL", page_icon=":robot:")
 st.title("Chatbot with MySQL")
 
 with st.sidebar:
-    st.subheader("Settings")
+    st.sidebar.title("Settings")
     st.write(
         "This is a simple chat application to communicate with MySQL database. Connect to the database and start chatting!"
+    )
+
+    model = st.sidebar.selectbox(
+        "Choose a model",
+        [
+            "llama3-8b-8192",
+            "mixtral-8x7b-32768",
+            "gemma-7b-it",
+            "gpt-3.5-turbo",
+            "gpt-4-turbo",
+        ],
     )
 
     st.text_input("Host", value="localhost", key="host")
@@ -167,11 +185,13 @@ if user_query is not None and user_query.strip() != "":
     with st.chat_message("AI"):
         try:
             response = get_response(
-                user_query, st.session_state.chat_history, st.session_state.db
+                model, user_query, st.session_state.chat_history, st.session_state.db
             )
             st.markdown(response)
 
         except Exception as e:
-            st.markdown(e)
+            st.markdown(
+                "No results found. Please ask a related question to the table schema."
+            )
 
     st.session_state.chat_history.append(AIMessage(content=response))
